@@ -9,9 +9,11 @@ public class BloodComboSpeedSystem : MonoBehaviour
     [Header("Combo")]
     [SerializeField] private float speedPerBlood = 0.12f;
     [SerializeField] private float maxBonusSpeed = 10f;
+    [SerializeField, Range(0f, 1f)] private float drainEnemyComboRetention = 0.4f;
 
     private int comboBloodCount;
     private float baseSpeed;
+    private bool useDrainEnemyLossRuleForNextLoss;
 
     public float BaseSpeed => baseSpeed;
     public float SpeedPerBlood => speedPerBlood;
@@ -80,8 +82,23 @@ public class BloodComboSpeedSystem : MonoBehaviour
             return;
         }
 
-        comboBloodCount = 0;
+        if (useDrainEnemyLossRuleForNextLoss)
+        {
+            useDrainEnemyLossRuleForNextLoss = false;
+            int retainedCombo = Mathf.CeilToInt(comboBloodCount * Mathf.Clamp01(drainEnemyComboRetention));
+            comboBloodCount = Mathf.Max(0, retainedCombo);
+        }
+        else
+        {
+            comboBloodCount = 0;
+        }
+
         ApplySpeed();
+    }
+
+    public void MarkNextCoinLossAsDrainEnemyHit()
+    {
+        useDrainEnemyLossRuleForNextLoss = true;
     }
 
     public void IncreaseBaseSpeed(float amount)

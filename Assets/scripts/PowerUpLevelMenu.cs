@@ -45,6 +45,12 @@ public class PowerUpLevelMenu : MonoBehaviour
     [SerializeField] private AudioClip[] levelUpSounds = new AudioClip[3];
     [SerializeField] [Range(0f, 1f)] private float levelUpSoundVolume = 0.9f;
 
+    [Header("Music")]
+    [SerializeField] private AudioSource levelMusicAudioSource;
+    [SerializeField] private AudioClip levelMusicClip;
+    [SerializeField] [Range(0f, 1f)] private float levelMusicVolume = 0.55f;
+    [SerializeField] private bool playLevelMusicOnStart = true;
+
     [Header("Effects")]
     [SerializeField] private bool playScreenParticlesOnOpen = true;
     [SerializeField] private Sprite screenParticleSprite;
@@ -81,6 +87,7 @@ public class PowerUpLevelMenu : MonoBehaviour
     private RectTransform screenParticleLayer;
     private int queuedOffers;
     private bool menuOpen;
+    private bool levelMusicWasPlayingBeforeMenu;
     private float screenParticleSpawnTimer;
     private readonly List<ScreenParticleInstance> activeScreenParticles = new List<ScreenParticleInstance>();
     private static Sprite fallbackScreenParticleSprite;
@@ -96,6 +103,7 @@ public class PowerUpLevelMenu : MonoBehaviour
     private void OnEnable()
     {
         ResolveReferences();
+        TryStartLevelMusic();
         AutoAssignChoiceButtons();
         RegisterButtonHandlers();
 
@@ -209,6 +217,7 @@ public class PowerUpLevelMenu : MonoBehaviour
         if (!wasMenuOpen)
         {
             PlayLevelUpSound();
+            PauseLevelMusic();
             PlayScreenParticles();
         }
 
@@ -436,6 +445,7 @@ public class PowerUpLevelMenu : MonoBehaviour
         SetMenuVisible(false);
 
         Time.timeScale = 1f;
+        ResumeLevelMusic();
     }
 
     private void ResolveReferences()
@@ -471,6 +481,27 @@ public class PowerUpLevelMenu : MonoBehaviour
             levelUpAudioSource.playOnAwake = false;
             levelUpAudioSource.loop = false;
             levelUpAudioSource.spatialBlend = 0f;
+        }
+
+        if (levelMusicAudioSource == null)
+        {
+            levelMusicAudioSource = gameObject.AddComponent<AudioSource>();
+            levelMusicAudioSource.playOnAwake = false;
+            levelMusicAudioSource.loop = true;
+            levelMusicAudioSource.spatialBlend = 0f;
+        }
+
+        if (levelMusicAudioSource != null)
+        {
+            levelMusicAudioSource.playOnAwake = false;
+            levelMusicAudioSource.loop = true;
+            levelMusicAudioSource.spatialBlend = 0f;
+            levelMusicAudioSource.volume = levelMusicVolume;
+
+            if (levelMusicClip != null && levelMusicAudioSource.clip != levelMusicClip)
+            {
+                levelMusicAudioSource.clip = levelMusicClip;
+            }
         }
 
         if (menuRoot == null)
@@ -653,6 +684,52 @@ public class PowerUpLevelMenu : MonoBehaviour
 
         AudioClip chosenClip = availableClips[Random.Range(0, availableClips.Count)];
         levelUpAudioSource.PlayOneShot(chosenClip, levelUpSoundVolume);
+    }
+
+    private void TryStartLevelMusic()
+    {
+        if (!playLevelMusicOnStart || levelMusicAudioSource == null)
+        {
+            return;
+        }
+
+        if (levelMusicAudioSource.clip == null)
+        {
+            return;
+        }
+
+        if (!levelMusicAudioSource.isPlaying)
+        {
+            levelMusicAudioSource.Play();
+        }
+    }
+
+    private void PauseLevelMusic()
+    {
+        if (levelMusicAudioSource == null)
+        {
+            return;
+        }
+
+        levelMusicWasPlayingBeforeMenu = levelMusicAudioSource.isPlaying;
+        if (levelMusicWasPlayingBeforeMenu)
+        {
+            levelMusicAudioSource.Pause();
+        }
+    }
+
+    private void ResumeLevelMusic()
+    {
+        if (levelMusicAudioSource == null)
+        {
+            return;
+        }
+
+        if (levelMusicWasPlayingBeforeMenu)
+        {
+            levelMusicAudioSource.UnPause();
+            levelMusicWasPlayingBeforeMenu = false;
+        }
     }
 
     private void SetMenuVisible(bool isVisible)

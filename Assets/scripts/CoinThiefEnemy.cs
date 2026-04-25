@@ -143,6 +143,13 @@ public class CoinThiefEnemy : MonoBehaviour
 
     private void StealCoins(PlayerCoinWallet wallet, Transform playerTransform)
     {
+        BloodComboSpeedSystem comboSystem = wallet.GetComponent<BloodComboSpeedSystem>()
+            ?? wallet.GetComponentInParent<BloodComboSpeedSystem>();
+        if (comboSystem != null)
+        {
+            comboSystem.MarkNextCoinLossAsDrainEnemyHit();
+        }
+
         int requestedAmount;
         if (drainAllCoinsOnHit)
         {
