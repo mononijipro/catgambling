@@ -13,18 +13,25 @@ public class SpeedScreenPulse : MonoBehaviour
     [SerializeField] private float pulseStartOffsetFromBaseSpeed = 0.6f;
     [SerializeField] private float pulseMaxOffsetFromBaseSpeed = 8f;
 
-    [Header("Pulse")]
-    [SerializeField] private float baseDistortionIntensity = -0.15f;
-    [SerializeField] private float pulseStrength = 0.20f;
+    [Header("Chromatic Aberration")]
+    [SerializeField, Range(0f, 1f)] private float baseChromaticIntensity = 0.04f;
+    [SerializeField, Range(0f, 1f)] private float chromaticPulseStrength = 0.12f;
+
+    [Header("Motion Blur")]
+    [SerializeField, Range(0f, 1f)] private float baseMotionBlurIntensity = 0.02f;
+    [SerializeField, Range(0f, 1f)] private float motionBlurPulseStrength = 0.15f;
+
+    [Header("Beat")]
     [SerializeField] private float maxBeatInterval = 1.4f;
     [SerializeField] private float minBeatInterval = 0.25f;
     [SerializeField] private float beatDecaySpeed = 8f;
 
-    private LensDistortion lensDistortion;
+    private ChromaticAberration chromaticAberration;
+    private MotionBlur motionBlur;
     private float baseSpeed;
     private float beatTimer;
     private float currentBeatInterval;
-    private float beatPhase;    // 0 = resting, 1..0 = decaying pulse
+    private float beatPhase; // 0 = resting, 1..0 = decaying pulse
 
     private void Awake()
     {
@@ -50,12 +57,7 @@ public class SpeedScreenPulse : MonoBehaviour
 
         if (targetVolume != null)
         {
-            targetVolume.profile.TryGet(out lensDistortion);
-
-            if (lensDistortion == null)
-            {
-                lensDistortion = targetVolume.profile.Add<LensDistortion>(true);
-            }
+            ResolvePostProcessOverrides();
         }
 
         if (comboSystem != null)
@@ -73,20 +75,25 @@ public class SpeedScreenPulse : MonoBehaviour
 
     private void OnDisable()
     {
-        if (lensDistortion != null)
+        if (chromaticAberration != null)
         {
-            lensDistortion.intensity.Override(baseDistortionIntensity);
+            chromaticAberration.intensity.Override(Mathf.Clamp01(baseChromaticIntensity));
+        }
+
+        if (motionBlur != null)
+        {
+            motionBlur.intensity.Override(Mathf.Clamp01(baseMotionBlurIntensity));
         }
     }
 
     private void LateUpdate()
     {
-        if (lensDistortion == null && targetVolume != null)
+        if ((chromaticAberration == null || motionBlur == null) && targetVolume != null)
         {
-            targetVolume.profile.TryGet(out lensDistortion);
+            ResolvePostProcessOverrides();
         }
 
-        if (runner == null || lensDistortion == null)
+        if (runner == null || (chromaticAberration == null && motionBlur == null))
         {
             return;
         }
@@ -106,13 +113,39 @@ public class SpeedScreenPulse : MonoBehaviour
             beatPhase = 1f;
         }
 
-        // Smooth ease: sharp attack, exponential decay
+        // Smooth ease for a musical, non-jagged pulse.
         beatPhase = Mathf.MoveTowards(beatPhase, 0f, Time.deltaTime * beatDecaySpeed);
-
-        // Use smoothstep so the transition in and out is eased (no sharp hike)
         float smoothed = Mathf.SmoothStep(0f, 1f, beatPhase);
-        float intensity = baseDistortionIntensity - smoothed * pulseStrength;
 
-        lensDistortion.intensity.Override(Mathf.Clamp(intensity, -1f, 1f));
+        float chromatic = Mathf.Clamp01(baseChromaticIntensity + smoothed * chromaticPulseStrength);
+        float blur = Mathf.Clamp01(baseMotionBlurIntensity + smoothed * motionBlurPulseStrength);
+
+        if (chromaticAberration != null)
+        {
+            chromaticAberration.intensity.Override(chromatic);
+        }
+
+        if (motionBlur != null)
+        {
+            motionBlur.intensity.Override(blur);
+        }
+    }
+
+    private void ResolvePostProcessOverrides()
+    {
+        if (targetVolume == null || targetVolume.profile == null)
+        {
+            return;
+        }
+
+        if (!targetVolume.profile.TryGet(out chromaticAberration) || chromaticAberration == null)
+        {
+            chromaticAberration = targetVolume.profile.Add<ChromaticAberration>(true);
+        }
+
+        if (!targetVolume.profile.TryGet(out motionBlur) || motionBlur == null)
+        {
+            motionBlur = targetVolume.profile.Add<MotionBlur>(true);
+        }
     }
 }

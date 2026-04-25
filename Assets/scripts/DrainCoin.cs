@@ -13,6 +13,12 @@ public class DrainCoin : MonoBehaviour
     [SerializeField] private float homingDelay = 0.2f;
     [SerializeField] private float homingSpeed = 12f;
 
+    [Header("Player Speed Inheritance")]
+    [SerializeField] private bool inheritPlayerForwardSpeed = true;
+    [SerializeField, Range(0f, 1f)] private float forwardSpeedInheritance = 0.9f;
+    [SerializeField] private bool continuousForwardDrift = true;
+    [SerializeField, Range(0f, 1.5f)] private float continuousDriftMultiplier = 1f;
+
     [Header("Lifetime")]
     [SerializeField] private float maxLifetime = 2.5f;
 
@@ -21,6 +27,7 @@ public class DrainCoin : MonoBehaviour
     private bool canHome;
     private bool fallingOnly;
     private Rigidbody rb;
+    private float inheritedForwardSpeed;
 
     private void Awake()
     {
@@ -40,6 +47,7 @@ public class DrainCoin : MonoBehaviour
         fallingOnly = false;
         aliveTime = 0f;
         rb.useGravity = false;
+        inheritedForwardSpeed = ResolveInheritedForwardSpeed();
 
         Vector2 scatter = Random.insideUnitCircle * 0.5f;
         transform.position += new Vector3(scatter.x, scatter.y, 0f);
@@ -51,6 +59,7 @@ public class DrainCoin : MonoBehaviour
         ).normalized;
 
         Vector3 launchVelocity = randomDirection * launchForce + Vector3.up * upwardForce;
+        launchVelocity += Vector3.forward * inheritedForwardSpeed;
 
         rb.linearVelocity = launchVelocity;
     }
@@ -63,6 +72,7 @@ public class DrainCoin : MonoBehaviour
         fallingOnly = true;
         aliveTime = 0f;
         rb.useGravity = true;
+        inheritedForwardSpeed = ResolveInheritedForwardSpeed();
 
         Vector2 scatter = Random.insideUnitCircle * 0.7f;
         transform.position += new Vector3(scatter.x, scatter.y, 0f);
@@ -74,12 +84,34 @@ public class DrainCoin : MonoBehaviour
         ).normalized;
 
         Vector3 launchVelocity = randomDirection * launchForce + Vector3.up * upwardForce;
+        launchVelocity += Vector3.forward * inheritedForwardSpeed;
         rb.linearVelocity = launchVelocity;
+    }
+
+    private float ResolveInheritedForwardSpeed()
+    {
+        if (!inheritPlayerForwardSpeed)
+        {
+            return 0f;
+        }
+
+        CatRunnerController runner = Object.FindObjectOfType<CatRunnerController>();
+        if (runner == null)
+        {
+            return 0f;
+        }
+
+        return runner.CurrentForwardSpeed * forwardSpeedInheritance;
     }
 
     private void Update()
     {
         aliveTime += Time.deltaTime;
+
+        if (continuousForwardDrift && inheritedForwardSpeed > 0f)
+        {
+            transform.position += Vector3.forward * (inheritedForwardSpeed * continuousDriftMultiplier * Time.deltaTime);
+        }
 
         if (aliveTime >= maxLifetime)
         {

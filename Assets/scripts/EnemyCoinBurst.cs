@@ -4,8 +4,11 @@ public class EnemyCoinBurst : MonoBehaviour
 {
     [SerializeField] private BurstCoin coinPrefab;
     [SerializeField] private int coinBurstCount = 8;
+    [SerializeField] private AudioClip hitSound;
+    [SerializeField, Range(0f, 1f)] private float hitVolume = 0.9f;
     [SerializeField] private AudioClip burstSound;
     [SerializeField, Range(0f, 1f)] private float burstVolume = 1f;
+    [SerializeField] private AudioSource sfxSource;
 
     public BurstCoin CoinPrefab => coinPrefab;
     public int CoinBurstCount => coinBurstCount;
@@ -46,6 +49,8 @@ public class EnemyCoinBurst : MonoBehaviour
                 rb2D.gravityScale = 0f;
             }
         }
+
+        ResolveAudioSource();
     }
 
     private void OnTriggerEnter(Collider other)
@@ -140,9 +145,14 @@ public class EnemyCoinBurst : MonoBehaviour
 
         hasBurst = true;
 
+        // Notify kill-streak listeners (walk-into kill)
+        GetComponent<EnemyHealth>()?.SignalDied();
+
+        PlayHitSound();
+
         if (burstSound != null)
         {
-            AudioSource.PlayClipAtPoint(burstSound, transform.position, burstVolume);
+            PlaySfx(burstSound, burstVolume);
         }
 
         for (int i = 0; i < coinBurstCount; i++)
@@ -151,6 +161,85 @@ public class EnemyCoinBurst : MonoBehaviour
             spawnedCoin.Spawn(playerTarget, wallet);
         }
 
-        Destroy(gameObject);
+        DisableEnemyBody();
+
+        float hitLen = hitSound != null ? hitSound.length : 0f;
+        float burstLen = burstSound != null ? burstSound.length : 0f;
+        float destroyDelay = Mathf.Max(0.05f, hitLen, burstLen);
+        Destroy(gameObject, destroyDelay);
+    }
+
+    private void PlayHitSound()
+    {
+        AudioClip clip = hitSound != null ? hitSound : burstSound;
+        if (clip == null)
+        {
+            return;
+        }
+
+        float volume = hitSound != null ? hitVolume : burstVolume;
+        PlaySfx(clip, volume);
+    }
+
+    private void ResolveAudioSource()
+    {
+        if (sfxSource == null)
+        {
+            sfxSource = GetComponent<AudioSource>();
+        }
+
+        if (sfxSource == null)
+        {
+            sfxSource = gameObject.AddComponent<AudioSource>();
+        }
+
+        sfxSource.playOnAwake = false;
+        sfxSource.spatialBlend = 0f;
+    }
+
+    private void PlaySfx(AudioClip clip, float volume)
+    {
+        if (clip == null)
+        {
+            return;
+        }
+
+        if (sfxSource == null)
+        {
+            ResolveAudioSource();
+        }
+
+        if (sfxSource == null)
+        {
+            return;
+        }
+
+        sfxSource.PlayOneShot(clip, Mathf.Clamp01(volume));
+    }
+
+    private void DisableEnemyBody()
+    {
+        Collider col = GetComponent<Collider>();
+        if (col != null)
+        {
+            col.enabled = false;
+        }
+
+        Collider2D col2D = GetComponent<Collider2D>();
+        if (col2D != null)
+        {
+            col2D.enabled = false;
+        }
+
+        Renderer[] renderers = GetComponentsInChildren<Renderer>();
+        for (int i = 0; i < renderers.Length; i++)
+        {
+            if (renderers[i] == null)
+            {
+                continue;
+            }
+
+            renderers[i].enabled = false;
+        }
     }
 }

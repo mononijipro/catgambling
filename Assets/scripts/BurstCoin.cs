@@ -14,6 +14,10 @@ public class BurstCoin : MonoBehaviour
     [SerializeField] private float homingDelay = 0.35f;
     [SerializeField] private float homingSpeed = 10f;
 
+    [Header("Player Speed Inheritance")]
+    [SerializeField] private bool inheritPlayerForwardSpeed = true;
+    [SerializeField, Range(0f, 1f)] private float forwardSpeedInheritance = 0.9f;
+
     [Header("Pickup")]
     [SerializeField] private int coinValue = 1;
     [SerializeField] private AudioClip pickupSound;
@@ -50,6 +54,22 @@ public class BurstCoin : MonoBehaviour
         ).normalized;
 
         Vector3 launchVelocity = randomDirection * launchForce + Vector3.up * upwardForce;
+
+        if (inheritPlayerForwardSpeed)
+        {
+            CatRunnerController runner = playerTarget != null
+                ? playerTarget.GetComponent<CatRunnerController>()
+                : null;
+            if (runner == null)
+            {
+                runner = Object.FindObjectOfType<CatRunnerController>();
+            }
+            if (runner != null)
+            {
+                launchVelocity.z += runner.CurrentForwardSpeed * forwardSpeedInheritance;
+            }
+        }
+
         canHome = false;
         aliveTime = 0f;
 

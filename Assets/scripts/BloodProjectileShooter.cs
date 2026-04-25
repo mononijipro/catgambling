@@ -13,12 +13,19 @@ public class BloodProjectileShooter : MonoBehaviour
     [Header("Fire")]
     [SerializeField] private float fireCooldown = 1f;
 
+    [Header("Fire Rate Scaling")]
+    [SerializeField] private int bloodPerFireRateUpgrade = 200;
+    [SerializeField] private float fireRateIncreasePerUpgrade = 1f;
+    [SerializeField] private float minFireCooldown = 0.06f;
+
     [Header("Blood Projectile Power")]
     [SerializeField] private int bloodLoss = 1;
     [SerializeField] private float bloodLossDamage = 2f;
     [SerializeField] private float bloodLossSpeed = 18f;
 
     private float cooldownTimer;
+    private int totalBloodGained;
+    private int appliedFireRateUpgrades;
 
     private void Awake()
     {
@@ -30,6 +37,24 @@ public class BloodProjectileShooter : MonoBehaviour
         if (wallet == null)
         {
             wallet = GetComponentInParent<PlayerCoinWallet>();
+        }
+
+        fireCooldown = Mathf.Max(minFireCooldown, fireCooldown);
+    }
+
+    private void OnEnable()
+    {
+        if (wallet != null)
+        {
+            wallet.CoinsAdded += OnCoinsAdded;
+        }
+    }
+
+    private void OnDisable()
+    {
+        if (wallet != null)
+        {
+            wallet.CoinsAdded -= OnCoinsAdded;
         }
     }
 
@@ -83,7 +108,7 @@ public class BloodProjectileShooter : MonoBehaviour
             actualProjectiles = wallet.RemoveCoins(requestedProjectiles);
             if (actualProjectiles <= 0)
             {
-                cooldownTimer = Mathf.Max(0.01f, fireCooldown);
+                cooldownTimer = GetCurrentFireCooldown();
                 return;
             }
         }
@@ -105,6 +130,31 @@ public class BloodProjectileShooter : MonoBehaviour
             projectile.Initialize(bloodLossDamage, bloodLossSpeed, transform);
         }
 
-        cooldownTimer = Mathf.Max(0.01f, fireCooldown);
+        cooldownTimer = GetCurrentFireCooldown();
+    }
+
+    private void OnCoinsAdded(int amount)
+    {
+        int gained = Mathf.Max(0, amount);
+        if (gained <= 0)
+        {
+            return;
+        }
+
+        totalBloodGained += gained;
+        int threshold = Mathf.Max(1, bloodPerFireRateUpgrade);
+        int targetUpgrades = totalBloodGained / threshold;
+        if (targetUpgrades > appliedFireRateUpgrades)
+        {
+            appliedFireRateUpgrades = targetUpgrades;
+        }
+    }
+
+    private float GetCurrentFireCooldown()
+    {
+        float baseShotsPerSecond = 1f / Mathf.Max(0.01f, fireCooldown);
+        float bonusShotsPerSecond = Mathf.Max(0f, fireRateIncreasePerUpgrade) * appliedFireRateUpgrades;
+        float totalShotsPerSecond = Mathf.Max(0.01f, baseShotsPerSecond + bonusShotsPerSecond);
+        return Mathf.Max(minFireCooldown, 1f / totalShotsPerSecond);
     }
 }

@@ -1,3 +1,4 @@
+using UnityEngine;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -22,14 +23,35 @@ public class ProceduralLaneSpawner : MonoBehaviour
     [SerializeField] private int maxEnemiesPerSegment = 2;
     [SerializeField] private bool alwaysSpawnAtLeastOneEnemy = true;
 
+    [Header("Level Scaling")]
+    [SerializeField] private bool scaleDifficultyWithLevel = true;
+    [SerializeField] private float spawnChanceIncreasePerLevel = 0.05f;
+    [SerializeField] private float segmentLengthDecreasePerLevel = 0.5f;
+    [SerializeField] private float minSegmentLength = 3f;
+    [SerializeField] private float maxLaneSpawnChance = 0.95f;
+    [SerializeField] private int enemiesPerSegmentIncreaseEveryNLevels = 3;
+
     private readonly List<GameObject> spawnedEnemies = new List<GameObject>();
     private readonly List<GameObject> validEnemyPrefabs = new List<GameObject>();
     private float nextSpawnZ;
+    private BloodExperienceSystem expSystem;
+    private float baseSegmentLength;
+    private float baseLaneSpawnChance;
+    private int baseMaxEnemies;
 
     private void Start()
     {
         ResolvePlayerReference();
         CacheValidEnemyPrefabs();
+        baseSegmentLength = segmentLength;
+        baseLaneSpawnChance = laneSpawnChance;
+        baseMaxEnemies = maxEnemiesPerSegment;
+
+        expSystem = FindObjectOfType<BloodExperienceSystem>();
+        if (expSystem != null)
+        {
+            expSystem.LevelUp += OnLevelUp;
+        }
 
         if (player == null)
         {
@@ -169,10 +191,39 @@ public class ProceduralLaneSpawner : MonoBehaviour
             }
 
             if (enemy.transform.position.z < deleteBelowZ)
-            {
+        {
                 Destroy(enemy);
                 spawnedEnemies.RemoveAt(i);
             }
+        }
+    }
+
+    private void OnLevelUp(int newLevel)
+    {
+        if (!scaleDifficultyWithLevel)
+        {
+            return;
+        }
+
+        int levelsGained = newLevel - 1;
+
+        laneSpawnChance = Mathf.Min(maxLaneSpawnChance,
+            baseLaneSpawnChance + levelsGained * spawnChanceIncreasePerLevel);
+
+        segmentLength = Mathf.Max(minSegmentLength,
+            baseSegmentLength - levelsGained * segmentLengthDecreasePerLevel);
+
+        int bonusEnemies = enemiesPerSegmentIncreaseEveryNLevels > 0
+            ? levelsGained / enemiesPerSegmentIncreaseEveryNLevels
+            : 0;
+        maxEnemiesPerSegment = baseMaxEnemies + bonusEnemies;
+    }
+
+    private void OnDestroy()
+    {
+        if (expSystem != null)
+        {
+            expSystem.LevelUp -= OnLevelUp;
         }
     }
 }

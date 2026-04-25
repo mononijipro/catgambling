@@ -135,8 +135,8 @@ MonoBehaviour:
   homingDelay: 0.5
   homingSpeed: 80
   coinValue: 1
-  pickupSound: {fileID: 8300000, guid: ade85e0d97590468e97e580092b5187c, type: 3}
-  pickupVolume: 0.9
+  pickupSound: {fileID: 8300000, guid: a55afab2e436741999a0980895e218d2, type: 3}
+  pickupVolume: 1
 --- !u!54 &589221510067616959
 Rigidbody:
   m_ObjectHideFlags: 0

@@ -19,9 +19,15 @@ public class CoinThiefEnemy : MonoBehaviour
     [SerializeField, Range(0f, 1f)] private float spillVisualMultiplier = 0.15f;
     [SerializeField] private int maxSpillVisualCoins = 12;
 
+    [Header("Player Damage")]
+    [SerializeField] private int healthDamageOnHit = 1;
+
     [Header("Sound")]
     [SerializeField] private AudioClip stealSound;
     [SerializeField, Range(0f, 1f)] private float stealVolume = 1f;
+    [SerializeField] private AudioClip hitSound;
+    [SerializeField, Range(0f, 1f)] private float hitVolume = 0.9f;
+    [SerializeField] private AudioSource sfxSource;
 
     private bool hasStolen;
 
@@ -67,6 +73,8 @@ public class CoinThiefEnemy : MonoBehaviour
                 rb2D.gravityScale = 0f;
             }
         }
+
+        ResolveAudioSource();
     }
 
     private void OnTriggerEnter(Collider other)
@@ -143,6 +151,15 @@ public class CoinThiefEnemy : MonoBehaviour
 
     private void StealCoins(PlayerCoinWallet wallet, Transform playerTransform)
     {
+        PlayHitSound();
+
+        CatHealthSystem healthSystem = wallet.GetComponent<CatHealthSystem>()
+            ?? wallet.GetComponentInParent<CatHealthSystem>();
+        if (healthSystem != null)
+        {
+            healthSystem.TakeDamage(Mathf.Max(0, healthDamageOnHit));
+        }
+
         BloodComboSpeedSystem comboSystem = wallet.GetComponent<BloodComboSpeedSystem>()
             ?? wallet.GetComponentInParent<BloodComboSpeedSystem>();
         if (comboSystem != null)
@@ -186,11 +203,59 @@ public class CoinThiefEnemy : MonoBehaviour
 
         if (stealSound != null)
         {
-            AudioSource.PlayClipAtPoint(stealSound, transform.position, stealVolume);
+            PlaySfx(stealSound, stealVolume);
         }
 
         hasStolen = true;
         Destroy(gameObject, 1.5f);
+    }
+
+    private void PlayHitSound()
+    {
+        AudioClip clip = hitSound != null ? hitSound : stealSound;
+        if (clip == null)
+        {
+            return;
+        }
+
+        float volume = hitSound != null ? hitVolume : stealVolume;
+        PlaySfx(clip, volume);
+    }
+
+    private void ResolveAudioSource()
+    {
+        if (sfxSource == null)
+        {
+            sfxSource = GetComponent<AudioSource>();
+        }
+
+        if (sfxSource == null)
+        {
+            sfxSource = gameObject.AddComponent<AudioSource>();
+        }
+
+        sfxSource.playOnAwake = false;
+        sfxSource.spatialBlend = 0f;
+    }
+
+    private void PlaySfx(AudioClip clip, float volume)
+    {
+        if (clip == null)
+        {
+            return;
+        }
+
+        if (sfxSource == null)
+        {
+            ResolveAudioSource();
+        }
+
+        if (sfxSource == null)
+        {
+            return;
+        }
+
+        sfxSource.PlayOneShot(clip, Mathf.Clamp01(volume));
     }
 
     private int GetVisualSpawnCount(int removedAmount, float multiplier, int maxCount)
