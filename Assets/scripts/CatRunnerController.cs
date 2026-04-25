@@ -9,13 +9,18 @@ public class CatRunnerController : MonoBehaviour
 
     [Header("Jump")]
     [SerializeField] private float jumpHeight = 2.2f;
-    [SerializeField] private float jumpDuration = 0.45f;
+    [SerializeField] private float jumpDuration = 0.95f;
 
     [Header("Lane Movement")]
     [SerializeField] private float laneWidth = 2.5f;
     [SerializeField] private float laneChangeSpeed = 12f;
 
-    private int currentLane = 1; // 0 = left, 1 = middle, 2 = right
+    [Header("Animation")]
+    [SerializeField] private Animator animator;
+
+    private static readonly int IsJumpingHash = Animator.StringToHash("IsJumping");
+
+    private int currentLane = 1;
     private bool isJumping;
     private float jumpTimer;
     private float groundY;
@@ -34,6 +39,13 @@ public class CatRunnerController : MonoBehaviour
             playerRigidbody.isKinematic = true;
             playerRigidbody.useGravity = false;
         }
+
+        if (animator == null) animator = GetComponent<Animator>();
+        if (animator == null) animator = GetComponentInChildren<Animator>();
+        if (animator == null) animator = GetComponentInParent<Animator>();
+
+        if (animator == null)
+            Debug.LogWarning("CatRunnerController: No Animator found — assign it in the Inspector.", this);
     }
 
     private void Update()
@@ -87,6 +99,7 @@ public class CatRunnerController : MonoBehaviour
         {
             isJumping = true;
             jumpTimer = 0f;
+            animator?.SetBool(IsJumpingHash, true);
         }
     }
 
@@ -128,6 +141,7 @@ public class CatRunnerController : MonoBehaviour
         if (progress >= 1f)
         {
             isJumping = false;
+            animator?.SetBool(IsJumpingHash, false);
             position = transform.position;
             position.y = groundY;
             transform.position = position;
