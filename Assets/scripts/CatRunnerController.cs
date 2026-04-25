@@ -19,9 +19,15 @@ public class CatRunnerController : MonoBehaviour
     [SerializeField] private Animator animator;
 
     private static readonly int IsJumpingHash = Animator.StringToHash("IsJumping");
+    private static readonly int TriggerDanceHash = Animator.StringToHash("TriggerDance");
+    private static readonly int TriggerMilkyHash = Animator.StringToHash("TriggerMilky");
 
     private int currentLane = 1;
     private bool isJumping;
+    private bool isDownAnimPlaying;
+    private int jumpCount;
+    private bool isSecondJump;
+    private float secondJumpStartY;
     private float jumpTimer;
     private float groundY;
     private Rigidbody playerRigidbody;
@@ -52,6 +58,7 @@ public class CatRunnerController : MonoBehaviour
     {
         HandleLaneInput();
         HandleJumpInput();
+        HandleDownInput();
         MoveForward();
         MoveToTargetLane();
         UpdateJumpMotion();
@@ -95,12 +102,61 @@ public class CatRunnerController : MonoBehaviour
             || keyboard.wKey.wasPressedThisFrame
             || keyboard.upArrowKey.wasPressedThisFrame;
 
-        if (jumpPressed && !isJumping)
+        if (jumpPressed)
         {
-            isJumping = true;
-            jumpTimer = 0f;
-            animator?.SetBool(IsJumpingHash, true);
+            if (!isJumping)
+            {
+                isJumping = true;
+                isSecondJump = false;
+                jumpCount = 1;
+                jumpTimer = 0f;
+                if (animator != null) animator.SetBool(IsJumpingHash, true);
+            }
+            else if (jumpCount < 2)
+            {
+                secondJumpStartY = transform.position.y;
+                isSecondJump = true;
+                jumpCount = 2;
+                jumpTimer = 0f;
+            }
         }
+    }
+
+    private void HandleDownInput()
+    {
+        if (animator == null)
+            return;
+
+        if (isJumping || isDownAnimPlaying)
+        {
+            if (isDownAnimPlaying)
+            {
+                bool fullyInBase = !animator.IsInTransition(0)
+                    && animator.GetCurrentAnimatorStateInfo(0).IsName("Jumping-Runnning");
+                if (fullyInBase)
+                    isDownAnimPlaying = false;
+            }
+            animator.ResetTrigger(TriggerDanceHash);
+            animator.ResetTrigger(TriggerMilkyHash);
+            return;
+        }
+
+        Keyboard keyboard = Keyboard.current;
+        if (keyboard == null)
+            return;
+
+        if (!keyboard.downArrowKey.wasPressedThisFrame && !keyboard.sKey.wasPressedThisFrame)
+            return;
+
+        animator.ResetTrigger(TriggerDanceHash);
+        animator.ResetTrigger(TriggerMilkyHash);
+
+        if (Random.Range(0, 2) == 0)
+            animator.SetTrigger(TriggerDanceHash);
+        else
+            animator.SetTrigger(TriggerMilkyHash);
+
+        isDownAnimPlaying = true;
     }
 
     public void SetForwardSpeed(float newSpeed)
@@ -132,16 +188,20 @@ public class CatRunnerController : MonoBehaviour
         float duration = Mathf.Max(0.05f, jumpDuration);
         jumpTimer += Time.deltaTime;
         float progress = Mathf.Clamp01(jumpTimer / duration);
-        float jumpOffset = Mathf.Sin(progress * Mathf.PI) * jumpHeight;
 
         Vector3 position = transform.position;
-        position.y = groundY + jumpOffset;
+        if (isSecondJump)
+            position.y = Mathf.Lerp(secondJumpStartY, groundY, progress) + Mathf.Sin(progress * Mathf.PI) * jumpHeight;
+        else
+            position.y = groundY + Mathf.Sin(progress * Mathf.PI) * jumpHeight;
         transform.position = position;
 
         if (progress >= 1f)
         {
             isJumping = false;
-            animator?.SetBool(IsJumpingHash, false);
+            isSecondJump = false;
+            jumpCount = 0;
+            if (animator != null) animator.SetBool(IsJumpingHash, false);
             position = transform.position;
             position.y = groundY;
             transform.position = position;
