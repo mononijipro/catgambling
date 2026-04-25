@@ -158,7 +158,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dbd993339e7374171a2d8cec3d903b5a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyHealth
-  maxHealth: 20
+  maxHealth: 100
   destroyOnDeath: 1
   explodeIntoBloodOnProjectileDeath: 1
   deathBurstCoinPrefab: {fileID: 7256279785893922667, guid: e885f375853aa4e1480c4ebeb9a00cbf, type: 3}
