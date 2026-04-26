@@ -1,5 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
 using System.Collections.Generic;
 using UnityEngine.Events;
 using System.Reflection;
@@ -81,6 +83,7 @@ public class PowerUpLevelMenu : MonoBehaviour
     private readonly List<PowerUpType> currentOffers = new List<PowerUpType>(3);
     private readonly UnityAction[] buttonActions = new UnityAction[3];
     private bool handlersRegistered;
+    private int selectedIndex;
     private bool menuRootIsSelf;
     private CanvasGroup menuCanvasGroup;
     private Canvas parentCanvas;
@@ -131,6 +134,9 @@ public class PowerUpLevelMenu : MonoBehaviour
     private void Update()
     {
         float deltaTime = Time.unscaledDeltaTime;
+
+        if (menuOpen)
+            HandleMenuNavInput();
 
         if (menuOpen && playScreenParticlesOnOpen)
         {
@@ -212,6 +218,9 @@ public class PowerUpLevelMenu : MonoBehaviour
         SetLabelText(descriptionLabel, "Choose one power up:");
 
         RefreshChoiceButtons();
+
+        selectedIndex = 0;
+        HighlightSelectedButton();
 
         SetMenuVisible(true);
         if (!wasMenuOpen)
@@ -434,6 +443,48 @@ public class PowerUpLevelMenu : MonoBehaviour
             default:
                 return "Power up gained.";
         }
+    }
+
+    private void HandleMenuNavInput()
+    {
+        Keyboard keyboard = Keyboard.current;
+        Gamepad gamepad = Gamepad.current;
+
+        bool navUp = (keyboard != null && (keyboard.upArrowKey.wasPressedThisFrame || keyboard.wKey.wasPressedThisFrame))
+            || (gamepad != null && (gamepad.dpad.up.wasPressedThisFrame || gamepad.leftStick.up.wasPressedThisFrame));
+
+        bool navDown = (keyboard != null && (keyboard.downArrowKey.wasPressedThisFrame || keyboard.sKey.wasPressedThisFrame))
+            || (gamepad != null && (gamepad.dpad.down.wasPressedThisFrame || gamepad.leftStick.down.wasPressedThisFrame));
+
+        bool confirm = (keyboard != null && (keyboard.enterKey.wasPressedThisFrame || keyboard.spaceKey.wasPressedThisFrame || keyboard.numpadEnterKey.wasPressedThisFrame))
+            || (gamepad != null && gamepad.buttonSouth.wasPressedThisFrame);
+
+        int count = currentOffers.Count;
+        if (count <= 0)
+            return;
+
+        if (navUp)
+        {
+            selectedIndex = (selectedIndex - 1 + count) % count;
+            HighlightSelectedButton();
+        }
+        else if (navDown)
+        {
+            selectedIndex = (selectedIndex + 1) % count;
+            HighlightSelectedButton();
+        }
+
+        if (confirm)
+            OnChoiceSelected(selectedIndex);
+    }
+
+    private void HighlightSelectedButton()
+    {
+        if (EventSystem.current == null)
+            return;
+
+        if (selectedIndex >= 0 && selectedIndex < choiceButtons.Length && choiceButtons[selectedIndex] != null)
+            EventSystem.current.SetSelectedGameObject(choiceButtons[selectedIndex].gameObject);
     }
 
     private void CloseMenu()

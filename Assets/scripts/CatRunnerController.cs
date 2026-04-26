@@ -103,20 +103,16 @@ public class CatRunnerController : MonoBehaviour
     private void HandleLaneInput()
     {
         Keyboard keyboard = Keyboard.current;
-        if (keyboard == null)
-        {
-            return;
-        }
+        Gamepad gamepad = Gamepad.current;
 
-        if (keyboard.leftArrowKey.wasPressedThisFrame || keyboard.aKey.wasPressedThisFrame)
-        {
-            currentLane--;
-        }
+        bool pressedLeft = (keyboard != null && (keyboard.leftArrowKey.wasPressedThisFrame || keyboard.aKey.wasPressedThisFrame))
+            || (gamepad != null && (gamepad.dpad.left.wasPressedThisFrame || gamepad.leftStick.left.wasPressedThisFrame));
 
-        if (keyboard.rightArrowKey.wasPressedThisFrame || keyboard.dKey.wasPressedThisFrame)
-        {
-            currentLane++;
-        }
+        bool pressedRight = (keyboard != null && (keyboard.rightArrowKey.wasPressedThisFrame || keyboard.dKey.wasPressedThisFrame))
+            || (gamepad != null && (gamepad.dpad.right.wasPressedThisFrame || gamepad.leftStick.right.wasPressedThisFrame));
+
+        if (pressedLeft) currentLane--;
+        if (pressedRight) currentLane++;
 
         currentLane = Mathf.Clamp(currentLane, 0, 2);
     }
@@ -129,14 +125,15 @@ public class CatRunnerController : MonoBehaviour
     private void HandleJumpInput()
     {
         Keyboard keyboard = Keyboard.current;
-        if (keyboard == null)
-        {
-            return;
-        }
+        Gamepad gamepad = Gamepad.current;
 
-        bool jumpPressed = keyboard.spaceKey.wasPressedThisFrame
+        if (keyboard == null && gamepad == null)
+            return;
+
+        bool jumpPressed = (keyboard != null && (keyboard.spaceKey.wasPressedThisFrame
             || keyboard.wKey.wasPressedThisFrame
-            || keyboard.upArrowKey.wasPressedThisFrame;
+            || keyboard.upArrowKey.wasPressedThisFrame))
+            || (gamepad != null && (gamepad.buttonSouth.wasPressedThisFrame || gamepad.dpad.up.wasPressedThisFrame));
 
         if (jumpPressed)
         {
@@ -180,10 +177,12 @@ public class CatRunnerController : MonoBehaviour
         }
 
         Keyboard keyboard = Keyboard.current;
-        if (keyboard == null)
-            return;
+        Gamepad gamepad = Gamepad.current;
 
-        if (!keyboard.downArrowKey.wasPressedThisFrame && !keyboard.sKey.wasPressedThisFrame)
+        bool downPressed = (keyboard != null && (keyboard.downArrowKey.wasPressedThisFrame || keyboard.sKey.wasPressedThisFrame))
+            || (gamepad != null && (gamepad.buttonEast.wasPressedThisFrame || gamepad.dpad.down.wasPressedThisFrame));
+
+        if (!downPressed)
             return;
 
         TriggerDownDrainPulse();
