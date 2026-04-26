@@ -18,6 +18,10 @@ public class CatRunnerController : MonoBehaviour
     [Header("Animation")]
     [SerializeField] private Animator animator;
 
+    [Header("Audio")]
+    [SerializeField] private AudioClip jumpSound;
+    [SerializeField] private float jumpSoundVolume = 1f;
+
     [Header("Down Key Drain Pulse")]
     [SerializeField] private bool enableDownDrainPulse = true;
     [SerializeField] private float downDrainDamage = 999f;
@@ -124,6 +128,7 @@ public class CatRunnerController : MonoBehaviour
                 jumpCount = 1;
                 jumpTimer = 0f;
                 if (animator != null) animator.SetBool(IsJumpingHash, true);
+                PlayJumpSound();
             }
             else if (jumpCount < 2)
             {
@@ -131,6 +136,7 @@ public class CatRunnerController : MonoBehaviour
                 isSecondJump = true;
                 jumpCount = 2;
                 jumpTimer = 0f;
+                PlayJumpSound();
             }
         }
     }
@@ -259,6 +265,14 @@ public class CatRunnerController : MonoBehaviour
             position = transform.position;
             position.y = groundY;
             transform.position = position;
+        }
+    }
+
+    private void PlayJumpSound()
+    {
+        if (jumpSound != null)
+        {
+            AudioSource.PlayClipAtPoint(jumpSound, transform.position, jumpSoundVolume);
         }
     }
 }
