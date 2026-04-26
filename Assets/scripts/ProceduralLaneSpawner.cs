@@ -1,12 +1,22 @@
 using UnityEngine;
 using System.Collections.Generic;
-using UnityEngine;
 
 public class ProceduralLaneSpawner : MonoBehaviour
 {
+    [System.Serializable]
+    private class EnemySpawnOption
+    {
+        public GameObject prefab;
+        public float yOffset;
+        public bool useRandomYOffset;
+        public float minRandomYOffset;
+        public float maxRandomYOffset;
+    }
+
     [Header("References")]
     [SerializeField] private Transform player;
     [SerializeField] private GameObject[] enemyPrefabs;
+    [SerializeField] private EnemySpawnOption[] enemySpawnOptions;
 
     [Header("Lane Setup")]
     [SerializeField] private float laneWidth = 2.5f;
@@ -32,7 +42,7 @@ public class ProceduralLaneSpawner : MonoBehaviour
     [SerializeField] private int enemiesPerSegmentIncreaseEveryNLevels = 3;
 
     private readonly List<GameObject> spawnedEnemies = new List<GameObject>();
-    private readonly List<GameObject> validEnemyPrefabs = new List<GameObject>();
+    private readonly List<EnemySpawnOption> validEnemyOptions = new List<EnemySpawnOption>();
     private float nextSpawnZ;
     private BloodExperienceSystem expSystem;
     private float baseSegmentLength;
@@ -60,7 +70,7 @@ public class ProceduralLaneSpawner : MonoBehaviour
             return;
         }
 
-        if (validEnemyPrefabs.Count == 0)
+        if (validEnemyOptions.Count == 0)
         {
             Debug.LogError("ProceduralLaneSpawner needs at least one valid enemy prefab assigned.");
             enabled = false;
@@ -95,7 +105,7 @@ public class ProceduralLaneSpawner : MonoBehaviour
 
     private void SpawnSegment(float zPosition)
     {
-        if (validEnemyPrefabs.Count == 0)
+        if (validEnemyOptions.Count == 0)
         {
             return;
         }
@@ -128,12 +138,24 @@ public class ProceduralLaneSpawner : MonoBehaviour
 
     private void SpawnEnemyInLane(int lane, float zPosition)
     {
-        int prefabIndex = Random.Range(0, validEnemyPrefabs.Count);
-        GameObject prefab = validEnemyPrefabs[prefabIndex];
+        int optionIndex = Random.Range(0, validEnemyOptions.Count);
+        EnemySpawnOption option = validEnemyOptions[optionIndex];
+        if (option == null || option.prefab == null)
+        {
+            return;
+        }
 
         float laneX = (lane - 1) * laneWidth;
-        Vector3 spawnPosition = new Vector3(laneX, spawnY, zPosition);
-        GameObject enemy = Instantiate(prefab, spawnPosition, Quaternion.identity);
+        float yOffset = option.yOffset;
+        if (option.useRandomYOffset)
+        {
+            float minY = Mathf.Min(option.minRandomYOffset, option.maxRandomYOffset);
+            float maxY = Mathf.Max(option.minRandomYOffset, option.maxRandomYOffset);
+            yOffset = Random.Range(minY, maxY);
+        }
+
+        Vector3 spawnPosition = new Vector3(laneX, spawnY + yOffset, zPosition);
+        GameObject enemy = Instantiate(option.prefab, spawnPosition, Quaternion.identity);
 
         spawnedEnemies.Add(enemy);
     }
@@ -161,7 +183,21 @@ public class ProceduralLaneSpawner : MonoBehaviour
 
     private void CacheValidEnemyPrefabs()
     {
-        validEnemyPrefabs.Clear();
+        validEnemyOptions.Clear();
+
+        if (enemySpawnOptions != null && enemySpawnOptions.Length > 0)
+        {
+            for (int i = 0; i < enemySpawnOptions.Length; i++)
+            {
+                EnemySpawnOption option = enemySpawnOptions[i];
+                if (option != null && option.prefab != null)
+                {
+                    validEnemyOptions.Add(option);
+                }
+            }
+
+            return;
+        }
 
         if (enemyPrefabs == null)
         {
@@ -170,10 +206,18 @@ public class ProceduralLaneSpawner : MonoBehaviour
 
         for (int i = 0; i < enemyPrefabs.Length; i++)
         {
-            if (enemyPrefabs[i] != null)
+            if (enemyPrefabs[i] == null)
             {
-                validEnemyPrefabs.Add(enemyPrefabs[i]);
+                continue;
             }
+
+            EnemySpawnOption fallback = new EnemySpawnOption();
+            fallback.prefab = enemyPrefabs[i];
+            fallback.yOffset = 0f;
+            fallback.useRandomYOffset = false;
+            fallback.minRandomYOffset = 0f;
+            fallback.maxRandomYOffset = 0f;
+            validEnemyOptions.Add(fallback);
         }
     }
 
@@ -191,7 +235,7 @@ public class ProceduralLaneSpawner : MonoBehaviour
             }
 
             if (enemy.transform.position.z < deleteBelowZ)
-        {
+            {
                 Destroy(enemy);
                 spawnedEnemies.RemoveAt(i);
             }

@@ -183,4 +183,9 @@ MonoBehaviour:
   homingSpeed: 0.1
   inheritPlayerForwardSpeed: 1
   forwardSpeedInheritance: 1
+  continuousForwardDrift: 1
+  continuousDriftMultiplier: 1
   maxLifetime: 3
+  damageEnemiesOnHit: 1
+  damageOnHit: 5
+  destroyOnEnemyHit: 0

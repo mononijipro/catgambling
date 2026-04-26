@@ -18,6 +18,13 @@ public class CatRunnerController : MonoBehaviour
     [Header("Animation")]
     [SerializeField] private Animator animator;
 
+    [Header("Down Key Drain Pulse")]
+    [SerializeField] private bool enableDownDrainPulse = true;
+    [SerializeField] private float downDrainDamage = 999f;
+    [SerializeField] private float downDrainRange = 45f;
+    [SerializeField] private float downDrainCooldown = 0.8f;
+    [SerializeField] private bool useProjectileDamageForDownDrain = true;
+
     private static readonly int IsJumpingHash = Animator.StringToHash("IsJumping");
     private static readonly int TriggerDanceHash = Animator.StringToHash("TriggerDance");
     private static readonly int TriggerMilkyHash = Animator.StringToHash("TriggerMilky");
@@ -31,6 +38,7 @@ public class CatRunnerController : MonoBehaviour
     private float jumpTimer;
     private float groundY;
     private Rigidbody playerRigidbody;
+    private float downDrainTimer;
 
     public float CurrentForwardSpeed => forwardSpeed;
     public float JumpHeight => jumpHeight;
@@ -56,6 +64,11 @@ public class CatRunnerController : MonoBehaviour
 
     private void Update()
     {
+        if (downDrainTimer > 0f)
+        {
+            downDrainTimer -= Time.deltaTime;
+        }
+
         HandleLaneInput();
         HandleJumpInput();
         HandleDownInput();
@@ -148,6 +161,8 @@ public class CatRunnerController : MonoBehaviour
         if (!keyboard.downArrowKey.wasPressedThisFrame && !keyboard.sKey.wasPressedThisFrame)
             return;
 
+        TriggerDownDrainPulse();
+
         animator.ResetTrigger(TriggerDanceHash);
         animator.ResetTrigger(TriggerMilkyHash);
 
@@ -157,6 +172,45 @@ public class CatRunnerController : MonoBehaviour
             animator.SetTrigger(TriggerMilkyHash);
 
         isDownAnimPlaying = true;
+    }
+
+    private void TriggerDownDrainPulse()
+    {
+        if (!enableDownDrainPulse || downDrainTimer > 0f)
+        {
+            return;
+        }
+
+        EnemyHealth[] enemies = FindObjectsOfType<EnemyHealth>();
+        float playerZ = transform.position.z;
+        float maxRange = Mathf.Max(0f, downDrainRange);
+        float damage = Mathf.Max(0f, downDrainDamage);
+
+        for (int i = 0; i < enemies.Length; i++)
+        {
+            EnemyHealth enemy = enemies[i];
+            if (enemy == null || enemy.CurrentHealth <= 0f)
+            {
+                continue;
+            }
+
+            float deltaZ = enemy.transform.position.z - playerZ;
+            if (deltaZ < 0f || deltaZ > maxRange)
+            {
+                continue;
+            }
+
+            if (useProjectileDamageForDownDrain)
+            {
+                enemy.TakeProjectileDamage(damage);
+            }
+            else
+            {
+                enemy.TakeDamage(damage);
+            }
+        }
+
+        downDrainTimer = Mathf.Max(0f, downDrainCooldown);
     }
 
     public void SetForwardSpeed(float newSpeed)

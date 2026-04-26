@@ -22,12 +22,18 @@ public class DrainCoin : MonoBehaviour
     [Header("Lifetime")]
     [SerializeField] private float maxLifetime = 2.5f;
 
+    [Header("Enemy Damage")]
+    [SerializeField] private bool damageEnemiesOnHit = true;
+    [SerializeField] private float damageOnHit = 1f;
+    [SerializeField] private bool destroyOnEnemyHit = true;
+
     private Transform thiefTarget;
     private float aliveTime;
     private bool canHome;
     private bool fallingOnly;
     private Rigidbody rb;
     private float inheritedForwardSpeed;
+    private bool hasHitEnemy;
 
     private void Awake()
     {
@@ -37,6 +43,33 @@ public class DrainCoin : MonoBehaviour
         rb = GetComponent<Rigidbody>();
         rb.useGravity = false;
         rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (!damageEnemiesOnHit || hasHitEnemy)
+        {
+            return;
+        }
+
+        EnemyHealth enemy = other.GetComponent<EnemyHealth>();
+        if (enemy == null)
+        {
+            enemy = other.GetComponentInParent<EnemyHealth>();
+        }
+
+        if (enemy == null)
+        {
+            return;
+        }
+
+        hasHitEnemy = true;
+        enemy.TakeDamage(Mathf.Max(0f, damageOnHit));
+
+        if (destroyOnEnemyHit)
+        {
+            Destroy(gameObject);
+        }
     }
 
     public void Spawn(Vector3 spawnPosition, Transform thief)

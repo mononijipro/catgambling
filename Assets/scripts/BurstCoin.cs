@@ -17,6 +17,10 @@ public class BurstCoin : MonoBehaviour
     [Header("Player Speed Inheritance")]
     [SerializeField] private bool inheritPlayerForwardSpeed = true;
     [SerializeField, Range(0f, 1f)] private float forwardSpeedInheritance = 0.9f;
+    [SerializeField] private bool addForwardSpeedToInitialLaunch = false;
+    [SerializeField] private bool continuousForwardDrift = true;
+    [SerializeField, Range(0f, 1.5f)] private float continuousDriftMultiplier = 1f;
+    [SerializeField] private bool useLiveRunnerSpeedForDrift = true;
 
     [Header("Pickup")]
     [SerializeField] private int coinValue = 1;
@@ -28,6 +32,8 @@ public class BurstCoin : MonoBehaviour
     private float aliveTime;
     private bool canHome;
     private bool isCollected;
+    private float inheritedForwardSpeed;
+    private CatRunnerController runner;
 
     private void Awake()
     {
@@ -44,6 +50,17 @@ public class BurstCoin : MonoBehaviour
         target = playerTarget;
         wallet = playerWallet;
 
+        runner = playerTarget != null
+            ? playerTarget.GetComponent<CatRunnerController>()
+            : null;
+        if (runner == null)
+        {
+            runner = Object.FindObjectOfType<CatRunnerController>();
+        }
+        inheritedForwardSpeed = runner != null
+            ? runner.CurrentForwardSpeed * forwardSpeedInheritance
+            : 0f;
+
         Vector2 scatter = Random.insideUnitCircle * initialScatterRadius;
         transform.position += new Vector3(scatter.x, scatter.y, 0f);
 
@@ -55,19 +72,9 @@ public class BurstCoin : MonoBehaviour
 
         Vector3 launchVelocity = randomDirection * launchForce + Vector3.up * upwardForce;
 
-        if (inheritPlayerForwardSpeed)
+        if (inheritPlayerForwardSpeed && addForwardSpeedToInitialLaunch)
         {
-            CatRunnerController runner = playerTarget != null
-                ? playerTarget.GetComponent<CatRunnerController>()
-                : null;
-            if (runner == null)
-            {
-                runner = Object.FindObjectOfType<CatRunnerController>();
-            }
-            if (runner != null)
-            {
-                launchVelocity.z += runner.CurrentForwardSpeed * forwardSpeedInheritance;
-            }
+            launchVelocity.z += inheritedForwardSpeed;
         }
 
         canHome = false;
@@ -80,6 +87,20 @@ public class BurstCoin : MonoBehaviour
     private void Update()
     {
         aliveTime += Time.deltaTime;
+
+        if (continuousForwardDrift && inheritPlayerForwardSpeed)
+        {
+            float forwardSpeed = inheritedForwardSpeed;
+            if (useLiveRunnerSpeedForDrift && runner != null)
+            {
+                forwardSpeed = runner.CurrentForwardSpeed * forwardSpeedInheritance;
+            }
+
+            if (forwardSpeed > 0f)
+            {
+                transform.position += Vector3.forward * (forwardSpeed * continuousDriftMultiplier * Time.deltaTime);
+            }
+        }
 
         if (!canHome && aliveTime >= homingDelay)
         {

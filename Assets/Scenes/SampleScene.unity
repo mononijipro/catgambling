@@ -952,7 +952,7 @@ MonoBehaviour:
   flashOverlay: {fileID: 0}
   autoCreateOverlayIfMissing: 1
   flashColor: {r: 1, g: 0.12, b: 0.12, a: 0.45}
-  flashDuration: 0.25
+  flashDuration: 0.4
 --- !u!114 &356831999
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1496,6 +1496,11 @@ MonoBehaviour:
   laneWidth: 15
   laneChangeSpeed: 12
   animator: {fileID: 0}
+  enableDownDrainPulse: 1
+  downDrainDamage: 1
+  downDrainRange: 69.2
+  downDrainCooldown: 0.8
+  useProjectileDamageForDownDrain: 1
 --- !u!114 &526325404
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1589,6 +1594,7 @@ Transform:
   - {fileID: 864149896}
   - {fileID: 444054246}
   - {fileID: 619394802}
+  - {fileID: 1696295028}
   - {fileID: 980427055}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -2401,7 +2407,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0cd44c1031e13a943bb63640046fad76, type: 3}
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.CanvasScaler
-  m_UiScaleMode: 0
+  m_UiScaleMode: 1
   m_ReferencePixelsPerUnit: 100
   m_ScaleFactor: 1
   m_ReferenceResolution: {x: 800, y: 600}
@@ -4084,6 +4090,28 @@ MonoBehaviour:
   - {fileID: 3382031987320250990, guid: 2e82a17f6c2474fc98e733bf5c0b4896, type: 3}
   - {fileID: 3382031987320250990, guid: caa975e3b44ab4e88b26f0781f513844, type: 3}
   - {fileID: 3382031987320250990, guid: 8e5ae64b73a774f728e7560e27417875, type: 3}
+  - {fileID: 3382031987320250990, guid: 223998f5d92db488a86de1ac8cd54e6d, type: 3}
+  enemySpawnOptions:
+  - prefab: {fileID: 3382031987320250990, guid: 223998f5d92db488a86de1ac8cd54e6d, type: 3}
+    yOffset: 7.7
+    useRandomYOffset: 0
+    minRandomYOffset: 0
+    maxRandomYOffset: 0
+  - prefab: {fileID: 3382031987320250990, guid: caa975e3b44ab4e88b26f0781f513844, type: 3}
+    yOffset: 0
+    useRandomYOffset: 0
+    minRandomYOffset: 0
+    maxRandomYOffset: 0
+  - prefab: {fileID: 3382031987320250990, guid: 8e5ae64b73a774f728e7560e27417875, type: 3}
+    yOffset: 0
+    useRandomYOffset: 0
+    minRandomYOffset: 0
+    maxRandomYOffset: 0
+  - prefab: {fileID: 3382031987320250990, guid: 2e82a17f6c2474fc98e733bf5c0b4896, type: 3}
+    yOffset: 0
+    useRandomYOffset: 0
+    minRandomYOffset: 0
+    maxRandomYOffset: 0
   laneWidth: 15
   spawnY: 0
   firstSpawnOffset: 96.4
@@ -5182,6 +5210,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 6180640845926911598, guid: 0fecdca039b704214a5e7ba96cfcf1d6, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1823683516}
+    - targetCorrespondingSourceObject: {fileID: 6180640845926911598, guid: 0fecdca039b704214a5e7ba96cfcf1d6, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1823683519}
   m_SourcePrefab: {fileID: 100100000, guid: 0fecdca039b704214a5e7ba96cfcf1d6, type: 3}
 --- !u!4 &1531842280 stripped
 Transform:
@@ -5973,6 +6004,90 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
+--- !u!1 &1696295027
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1696295028}
+  - component: {fileID: 1696295029}
+  m_Layer: 0
+  m_Name: Global Light 2D (1)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1696295028
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1696295027}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 5, y: 20.05, z: 91.72}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 526325406}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1696295029
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1696295027}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 073797afb82c5a1438f328866b10b3f0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_ComponentVersion: 2
+  m_LightType: 1
+  m_BlendStyleIndex: 0
+  m_FalloffIntensity: 0.5
+  m_Color: {r: 1, g: 0.16584383, b: 0, a: 1}
+  m_Intensity: 15.66
+  m_LightVolumeIntensity: 1
+  m_LightVolumeEnabled: 0
+  m_ApplyToSortingLayers: 00000000
+  m_LightCookieSprite: {fileID: 0}
+  m_DeprecatedPointLightCookieSprite: {fileID: 0}
+  m_LightOrder: 0
+  m_AlphaBlendOnOverlap: 0
+  m_OverlapOperation: 0
+  m_NormalMapDistance: 3
+  m_NormalMapQuality: 2
+  m_UseNormalMap: 0
+  m_ShadowsEnabled: 0
+  m_ShadowIntensity: 0.75
+  m_ShadowSoftness: 0
+  m_ShadowSoftnessFalloffIntensity: 0.5
+  m_ShadowVolumeIntensityEnabled: 0
+  m_ShadowVolumeIntensity: 0.75
+  m_LocalBounds:
+    m_Center: {x: -0.00024986267, y: -0.0001001358, z: 0}
+    m_Extent: {x: 30.61045, y: 30.6109, z: 0}
+  m_PointLightInnerAngle: 360
+  m_PointLightOuterAngle: 360
+  m_PointLightInnerRadius: 0
+  m_PointLightOuterRadius: 1
+  m_ShapeLightParametricSides: 5
+  m_ShapeLightParametricAngleOffset: 0
+  m_ShapeLightParametricRadius: 1
+  m_ShapeLightFalloffSize: 30.11
+  m_ShapeLightFalloffOffset: {x: 0, y: 0}
+  m_ShapePath:
+  - {x: -0.5, y: -0.5, z: 0}
+  - {x: 0.5, y: -0.5, z: 0}
+  - {x: 0.5, y: 0.5, z: 0}
+  - {x: -0.5, y: 0.5, z: 0}
 --- !u!1 &1708857071
 GameObject:
   m_ObjectHideFlags: 0
@@ -6058,7 +6173,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0cd44c1031e13a943bb63640046fad76, type: 3}
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.CanvasScaler
-  m_UiScaleMode: 0
+  m_UiScaleMode: 1
   m_ReferencePixelsPerUnit: 100
   m_ScaleFactor: 1
   m_ReferenceResolution: {x: 800, y: 600}
@@ -6329,6 +6444,27 @@ MonoBehaviour:
   spriteRenderers: []
   flashColor: {r: 1, g: 0.9, b: 0.2, a: 1}
   flashDuration: 0.15
+--- !u!114 &1823683519
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1823683513}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 443353661727d46e0bc6dd14e62d4452, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CatHurtObjectFlash
+  healthSystem: {fileID: 526325414}
+  spriteRenderers:
+  - {fileID: 0}
+  renderers: []
+  primaryColorProperty: _BaseColor
+  fallbackColorProperty: _Color
+  flashColor: {r: 1, g: 0.2, b: 0.2, a: 1}
+  flashDuration: 0.2
+  flashCount: 3
 --- !u!1 &1829096896
 GameObject:
   m_ObjectHideFlags: 0
@@ -6714,7 +6850,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 9452ae1262a74094f8a68013fbcd1834, type: 2}
+  - {fileID: 2100000, guid: 07bbccd4bdfa64c848560103fb6cea9d, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
