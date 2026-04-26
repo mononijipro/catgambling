@@ -9,6 +9,8 @@ public class InfiniteRoadLooper : MonoBehaviour
     [SerializeField] private List<Transform> roadTiles = new List<Transform>();
     [SerializeField] private bool autoPopulateFromChildren = true;
     [SerializeField] private Transform roadTilePrefab;
+    [SerializeField] private List<Transform> alternativePrefabs = new List<Transform>();
+    [SerializeField] private float alternativePrefabChance = 0.2f;
 
     [Header("Loop Settings")]
     [SerializeField] private float recycleOffset = 2f;
@@ -134,10 +136,17 @@ public class InfiniteRoadLooper : MonoBehaviour
             float targetX = hasLockedRoadAnchor ? lockedRoadX : firstTile.position.x;
             float targetY = hasLockedRoadAnchor ? lockedRoadY : firstTile.position.y;
 
+            // Detect the actual length of the last tile (in case it's a different prefab)
+            float lastTileLength = tileLength;
+            if (lastTile.TryGetComponent<Renderer>(out Renderer rend))
+            {
+                lastTileLength = rend.bounds.size.z;
+            }
+
             firstTile.position = new Vector3(
                 targetX,
                 targetY,
-                lastTile.position.z + tileLength);
+                lastTile.position.z + lastTileLength);
 
             roadTiles.RemoveAt(0);
             roadTiles.Add(firstTile);
@@ -241,7 +250,15 @@ public class InfiniteRoadLooper : MonoBehaviour
         {
             int index = roadTiles.Count;
             Vector3 spawnPos = new Vector3(anchorX, anchorY, startZ + tileLength * index);
-            Transform tile = Instantiate(roadTilePrefab, spawnPos, Quaternion.identity, transform);
+            
+            // Select either the main prefab or a random alternative
+            Transform prefabToUse = roadTilePrefab;
+            if (alternativePrefabs.Count > 0 && Random.value < alternativePrefabChance)
+            {
+                prefabToUse = alternativePrefabs[Random.Range(0, alternativePrefabs.Count)];
+            }
+            
+            Transform tile = Instantiate(prefabToUse, spawnPos, Quaternion.identity, transform);
             roadTiles.Add(tile);
         }
     }

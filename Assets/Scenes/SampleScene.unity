@@ -737,6 +737,9 @@ MonoBehaviour:
   - {fileID: 3274399333506750333, guid: e7d7246cd238742ad872d09358f49827, type: 3}
   autoPopulateFromChildren: 1
   roadTilePrefab: {fileID: 3274399333506750333, guid: e7d7246cd238742ad872d09358f49827, type: 3}
+  alternativePrefabs:
+  - {fileID: 3274399333506750333, guid: 4b1ebf98694c74aada221002c6450a1b, type: 3}
+  alternativePrefabChance: 0.12
   recycleOffset: 10
   snapTilesOnStart: 1
   alignRoadToPlayerLane: 1
@@ -4478,6 +4481,8 @@ MonoBehaviour:
   - {fileID: 3274399333506750333, guid: 7ed904a6f2bdf49b7a0f90e9eb5681ff, type: 3}
   autoPopulateFromChildren: 1
   roadTilePrefab: {fileID: 3274399333506750333, guid: 7ed904a6f2bdf49b7a0f90e9eb5681ff, type: 3}
+  alternativePrefabs: []
+  alternativePrefabChance: 0.2
   recycleOffset: 10
   snapTilesOnStart: 1
   alignRoadToPlayerLane: 1
@@ -6522,15 +6527,37 @@ MonoBehaviour:
   targetCamera: {fileID: 0}
   roadTiles:
   - {fileID: 3274399333506750333, guid: 08feb08953acc4ddebc6e6fc66bf8e0b, type: 3}
+  - {fileID: 3274399333506750333, guid: 4b1ebf98694c74aada221002c6450a1b, type: 3}
+  - {fileID: 3274399333506750333, guid: 08feb08953acc4ddebc6e6fc66bf8e0b, type: 3}
+  - {fileID: 3274399333506750333, guid: 08feb08953acc4ddebc6e6fc66bf8e0b, type: 3}
+  - {fileID: 3274399333506750333, guid: 08feb08953acc4ddebc6e6fc66bf8e0b, type: 3}
+  - {fileID: 3274399333506750333, guid: 08feb08953acc4ddebc6e6fc66bf8e0b, type: 3}
+  - {fileID: 3274399333506750333, guid: 4b1ebf98694c74aada221002c6450a1b, type: 3}
+  - {fileID: 3274399333506750333, guid: 08feb08953acc4ddebc6e6fc66bf8e0b, type: 3}
+  - {fileID: 3274399333506750333, guid: 08feb08953acc4ddebc6e6fc66bf8e0b, type: 3}
+  - {fileID: 3274399333506750333, guid: 08feb08953acc4ddebc6e6fc66bf8e0b, type: 3}
+  - {fileID: 3274399333506750333, guid: 08feb08953acc4ddebc6e6fc66bf8e0b, type: 3}
+  - {fileID: 3274399333506750333, guid: 4b1ebf98694c74aada221002c6450a1b, type: 3}
+  - {fileID: 3274399333506750333, guid: 08feb08953acc4ddebc6e6fc66bf8e0b, type: 3}
+  - {fileID: 3274399333506750333, guid: 08feb08953acc4ddebc6e6fc66bf8e0b, type: 3}
+  - {fileID: 3274399333506750333, guid: 08feb08953acc4ddebc6e6fc66bf8e0b, type: 3}
+  - {fileID: 3274399333506750333, guid: 08feb08953acc4ddebc6e6fc66bf8e0b, type: 3}
+  - {fileID: 3274399333506750333, guid: 4b1ebf98694c74aada221002c6450a1b, type: 3}
+  - {fileID: 3274399333506750333, guid: 08feb08953acc4ddebc6e6fc66bf8e0b, type: 3}
+  - {fileID: 3274399333506750333, guid: 08feb08953acc4ddebc6e6fc66bf8e0b, type: 3}
+  - {fileID: 3274399333506750333, guid: 08feb08953acc4ddebc6e6fc66bf8e0b, type: 3}
   autoPopulateFromChildren: 1
   roadTilePrefab: {fileID: 3274399333506750333, guid: 08feb08953acc4ddebc6e6fc66bf8e0b, type: 3}
+  alternativePrefabs:
+  - {fileID: 3274399333506750333, guid: 70f79a9ad23f44ac48759dba1fe9e7b1, type: 3}
+  alternativePrefabChance: 0.2
   recycleOffset: 10
   snapTilesOnStart: 1
   alignRoadToPlayerLane: 1
   laneXOffset: -5
   roadY: -3.72
   autoDetectTileLength: 0
-  tileLength: 10
+  tileLength: 15.51
   autoGenerateIfTooFewTiles: 1
   generatedTileCount: 20
 --- !u!4 &1829096898
