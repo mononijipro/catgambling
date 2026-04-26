@@ -5066,8 +5066,8 @@ MonoBehaviour:
   projectileDeathVolume: 0.95
   sfxSource: {fileID: 0}
   barOffset: {x: 0, y: 1.6, z: 0}
-  barWidth: 1.2
-  barHeight: 0.2
+  barWidth: 1.8
+  barHeight: 0.28
   rainbowCycleSpeed: 0.75
   showDamageNumbers: 1
   damageNumberParent: {fileID: 0}

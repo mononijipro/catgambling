@@ -20,8 +20,8 @@ public class EnemyHealth : MonoBehaviour
 
     [Header("Health Bar")]
     [SerializeField] private Vector3 barOffset = new Vector3(0f, 1.6f, 0f);
-    [SerializeField] private float barWidth = 1.2f;
-    [SerializeField] private float barHeight = 0.2f;
+    [SerializeField] private float barWidth = 1.8f;
+    [SerializeField] private float barHeight = 0.28f;
     [SerializeField] private float rainbowCycleSpeed = 0.75f;
 
     [Header("Damage Numbers")]
