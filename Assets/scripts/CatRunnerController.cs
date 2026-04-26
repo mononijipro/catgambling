@@ -1,5 +1,7 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.UI;
+using TMPro;
 
 public class CatRunnerController : MonoBehaviour
 {
@@ -17,6 +19,13 @@ public class CatRunnerController : MonoBehaviour
 
     [Header("Animation")]
     [SerializeField] private Animator animator;
+
+    [Header("Start Banner")]
+    [SerializeField] private bool showStartBanner = true;
+    [SerializeField] private string startBannerText = "GET READY";
+    [SerializeField] private float startBannerDuration = 1f;
+    [SerializeField] private float startBannerFontSize = 180f;
+    [SerializeField] private Color startBannerColor = Color.white;
 
     [Header("Audio")]
     [SerializeField] private AudioClip jumpSound;
@@ -43,6 +52,9 @@ public class CatRunnerController : MonoBehaviour
     private float groundY;
     private Rigidbody playerRigidbody;
     private float downDrainTimer;
+    private Canvas startBannerCanvas;
+    private TMP_Text startBannerLabel;
+    private float startBannerTimer;
 
     public float CurrentForwardSpeed => forwardSpeed;
     public float JumpHeight => jumpHeight;
@@ -66,8 +78,15 @@ public class CatRunnerController : MonoBehaviour
             Debug.LogWarning("CatRunnerController: No Animator found — assign it in the Inspector.", this);
     }
 
+    private void Start()
+    {
+        ShowStartBanner();
+    }
+
     private void Update()
     {
+        UpdateStartBanner();
+
         if (downDrainTimer > 0f)
         {
             downDrainTimer -= Time.deltaTime;
@@ -273,6 +292,72 @@ public class CatRunnerController : MonoBehaviour
         if (jumpSound != null)
         {
             AudioSource.PlayClipAtPoint(jumpSound, transform.position, jumpSoundVolume);
+        }
+    }
+
+    private void ShowStartBanner()
+    {
+        if (!showStartBanner || string.IsNullOrWhiteSpace(startBannerText))
+        {
+            return;
+        }
+
+        GameObject canvasObject = new GameObject("StartBannerCanvas", typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
+        startBannerCanvas = canvasObject.GetComponent<Canvas>();
+        startBannerCanvas.renderMode = RenderMode.ScreenSpaceOverlay;
+        startBannerCanvas.sortingOrder = 1000;
+
+        CanvasScaler scaler = canvasObject.GetComponent<CanvasScaler>();
+        scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+        scaler.referenceResolution = new Vector2(1920f, 1080f);
+        scaler.screenMatchMode = CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
+        scaler.matchWidthOrHeight = 0.5f;
+
+        GameObject textObject = new GameObject("StartBannerText", typeof(RectTransform), typeof(TextMeshProUGUI));
+        textObject.transform.SetParent(canvasObject.transform, false);
+
+        RectTransform textRect = textObject.GetComponent<RectTransform>();
+        textRect.anchorMin = Vector2.zero;
+        textRect.anchorMax = Vector2.one;
+        textRect.offsetMin = Vector2.zero;
+        textRect.offsetMax = Vector2.zero;
+
+        TextMeshProUGUI text = textObject.GetComponent<TextMeshProUGUI>();
+        text.text = startBannerText;
+        text.alignment = TextAlignmentOptions.Center;
+        text.fontSize = startBannerFontSize;
+        text.color = startBannerColor;
+        text.fontStyle = FontStyles.Bold;
+        text.enableWordWrapping = false;
+        text.raycastTarget = false;
+
+        startBannerLabel = text;
+        startBannerTimer = Mathf.Max(0.01f, startBannerDuration);
+    }
+
+    private void UpdateStartBanner()
+    {
+        if (startBannerCanvas == null)
+        {
+            return;
+        }
+
+        startBannerTimer -= Time.unscaledDeltaTime;
+        if (startBannerTimer > 0f)
+        {
+            return;
+        }
+
+        Destroy(startBannerCanvas.gameObject);
+        startBannerCanvas = null;
+        startBannerLabel = null;
+    }
+
+    private void OnDestroy()
+    {
+        if (startBannerCanvas != null)
+        {
+            Destroy(startBannerCanvas.gameObject);
         }
     }
 }

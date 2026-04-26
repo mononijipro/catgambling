@@ -1499,6 +1499,11 @@ MonoBehaviour:
   laneWidth: 15
   laneChangeSpeed: 12
   animator: {fileID: 0}
+  showStartBanner: 1
+  startBannerText: GET READY
+  startBannerDuration: 2
+  startBannerFontSize: 180
+  startBannerColor: {r: 1, g: 0.88898367, b: 0, a: 1}
   jumpSound: {fileID: 8300000, guid: 9518618367d4c4db8818d3b20b9392af, type: 3}
   jumpSoundVolume: 3
   enableDownDrainPulse: 1
